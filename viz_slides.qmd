@@ -1,0 +1,25 @@
+---
+title: "Data Viz Tips & Tricks"
+author: "Eric Ekholm"
+format: revealjs
+---
+
+# About Me
+
+- Data Specialist at CCPS
+    - formerly VDOE & MS English Teacher
+- PhD in Educational Psychology
+- 2 kids, 1 pitbull
+- Enjoy data, coding, reading, and crossfit
+- [Twitter](https://twitter.com/ekholm_e), [Github](https://github.com/ekholme), [Website](https://www.ericekholm.com)
+
+# Placeholder
+
+- some text why not?
+
+```{r}
+library(ggplot2)
+
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point()
+```
