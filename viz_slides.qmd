@@ -13,13 +13,66 @@ format: revealjs
 - Enjoy data, coding, reading, and crossfit
 - [Twitter](https://twitter.com/ekholm_e), [Github](https://github.com/ekholme), [Website](https://www.ericekholm.com)
 
-# Placeholder
+# About These Materials
 
-- some text why not?
+- All plots created using [R](https://www.r-project.org/) and the [`ggplot2`](https://ggplot2.tidyverse.org/) visualization library
+- Slides created using [Quarto](https://quarto.org/)
+- Data is publicly available from VDOE (& is also available in this repository).
+- All code/slides available in this [Github repository](https://github.com/ekholme/data_viz_tips)
+
+# Use Data to Tell a Story
+
+- Embrace the fact that visualizations are subjective
+- Make your viz decisions shape the story you want to tell
+- Tailor the story you're telling to the decisions you're trying to inform
+
+# Tip #1: Tell Viewers the Takeaway
 
 ```{r}
-library(ggplot2)
+#| echo: false
 
-ggplot(mtcars, aes(x = wt, y = mpg)) +
-    geom_point()
+library(tidyverse)
+library(ccpsr)
+library(janitor)
+
+theme_set(theme_ore())
+
+sol_raw <- read_csv(here::here("data/sol_longitudinal_results.csv")) |>
+    clean_names() |>
+    mutate(school_year = as.numeric(str_replace_all(school_year, "(^\\d{4}).*", "\\1")))
+
+ccps_rd3 <- sol_raw |>
+    filter(test == "English Reading", test_level == "Grade 3", division_number == 21)
 ```
+
+# Generic Title
+
+```{r}
+basep <- ccps_rd3 |>
+    ggplot(aes(x = school_year, y = pass_rate)) +
+    geom_line(size = 2) +
+    theme(
+        panel.grid.minor = element_blank()
+    )
+
+basep +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        caption = "Data: VDOE Test Results Build-a-Table",
+        title = "CCPS 3rd Grade Reading SOL Pass Rates Over Time"
+    )
+```
+
+# Opinionated Title
+
+```{r}
+basep +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        caption = "Data: VDOE Test Results Build-a-Table",
+        title = "CCPS 3rd Grade Reading Scores Decline Steeply after 2015"
+    )
+```
+
