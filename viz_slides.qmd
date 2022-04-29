@@ -95,14 +95,11 @@ basep +
 
 # Tip #2: Avoid Extraneous Information
 
- - Provide the minimum amount of information that supports your takeaway
-
 # Too Much
 
- ```{r}
+```{r}
  rd3_top <- sol_top |>
-    filter(test == "English Reading", test_level == "Grade 3") |>
-    mutate(is_ccps = if_else(division_number == 21, herm, g80))
+    filter(test == "English Reading", test_level == "Grade 3")
 
  rd3_top |>
     ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
@@ -114,8 +111,7 @@ basep +
         caption = "Data: VDOE Test Results Build-a-Table"
     ) +
     scale_color_discrete(name = "Division")
-
- ```
+```
 
 # Just Enough
 
@@ -132,4 +128,68 @@ basep +
         caption = "Data: VDOE Test Results Build-a-Table"
     )
 
+```
+
+# Tip #3: Build to Complex Visuals
+
+- Generally, try to keep visualizations simple and aligned with your key takeaways
+- If you need to do something more complex, build to it over several plots
+
+# Start With
+
+```{r}
+ccps_rd3 |>
+    ggplot(aes(x = school_year, y = pass_rate)) +
+    geom_line(size = 2, color = herm) +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        caption = "Data: VDOE Test Results Build-a-Table",
+        title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Scores Decline Steeply after 2015"
+    )
+```
+
+# Then
+
+```{r}
+ rd3_top |>
+    filter(division_number != 21) |>
+    ggplot() +
+    geom_line(aes(x = school_year, y = pass_rate, group = division_number), color = g80, size = 1) +
+    geom_line(data = ccps_rd3, aes(x = school_year, y = pass_rate), size = 2, color = herm) +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Trends Largely Mirrored those of Other Large Divisions<br>in VA",
+        caption = "Data: VDOE Test Results Build-a-Table"
+    )
+```
+
+# Finally
+
+```{r}
+gs <- paste0("Grade ", 3:8)
+
+rd_es_ms_top <- sol_top |>
+    filter(test == "English Reading", test_level %in% gs) |>
+    mutate(is_ccps = if_else(division_number == 21, herm, g80),
+            division_name = if_else(str_detect(division_name, "^Chester"), str_replace_all(division_name, "^", "z"), division_name)) |>
+    arrange(division_name)
+
+ccps_es_ms_rd <- rd_es_ms_top |>
+    filter(division_number == 21)
+
+rd_es_ms_top |>
+    #filter(division_number != 21) |>
+    ggplot() +
+    geom_line(aes(x = school_year, y = pass_rate, group = division_name, color = is_ccps), size = 1) +
+    # geom_line(data = ccps_rd3, aes(x = school_year, y = pass_rate), size = 2, color = herm) +
+    facet_wrap(vars(test_level)) +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        title = "<span style='color:#660012'>CCPS's</span> Grade 3-8 Reading Trends Largely Mirrored those of Other Large Divisions<br>in VA",
+        caption = "Data: VDOE Test Results Build-a-Table"
+    ) +
+    scale_color_identity()
 ```
