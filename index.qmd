@@ -219,8 +219,6 @@ rd_es_ms_top |>
 
 # Colored Text
 
-- I've been doing this throughout. Notice that the color of <span style='color:#660012'>CCPS</span> in the title eliminates the need for a legend
-
 ```{r}
 rd_es_ms_top |>
     ggplot() +
@@ -236,8 +234,6 @@ rd_es_ms_top |>
 ```
 
 # Direct Labels
-
-- This can work well with a moderate number of groups (~2-5)
 
 ```{r}
 ccps_hr_rd3 <- sol_top |>
