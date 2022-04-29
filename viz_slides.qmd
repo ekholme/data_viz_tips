@@ -37,12 +37,29 @@ library(janitor)
 
 theme_set(theme_ore())
 
+#set color hexes
+herm <- "#660012"
+g80 <- "#cccccc"
+
+#read in and lightly manipulate some data
 sol_raw <- read_csv(here::here("data/sol_longitudinal_results.csv")) |>
     clean_names() |>
     mutate(school_year = as.numeric(str_replace_all(school_year, "(^\\d{4}).*", "\\1")))
 
+fm_df <- read_csv(here::here("data/fall_membership_statistics.csv")) |>
+    clean_names()
+
+top_nms <- fm_df |>
+    slice_max(order_by = total_count, n = 10) |>
+    pull(division_number)
+
+sol_top  <- sol_raw |>
+    filter(division_number %in% top_nms)
+
 ccps_rd3 <- sol_raw |>
     filter(test == "English Reading", test_level == "Grade 3", division_number == 21)
+
+
 ```
 
 # Generic Title
@@ -76,3 +93,43 @@ basep +
     )
 ```
 
+# Tip #2: Avoid Extraneous Information
+
+ - Provide the minimum amount of information that supports your takeaway
+
+# Too Much
+
+ ```{r}
+ rd3_top <- sol_top |>
+    filter(test == "English Reading", test_level == "Grade 3") |>
+    mutate(is_ccps = if_else(division_number == 21, herm, g80))
+
+ rd3_top |>
+    ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
+    geom_line() +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        title = "Grade 3 Reading SOL Pass Rates for VA's 10 Largest Divisions",
+        caption = "Data: VDOE Test Results Build-a-Table"
+    ) +
+    scale_color_discrete(name = "Division")
+
+ ```
+
+# Just Enough
+
+```{r}
+ rd3_top |>
+    filter(division_number != 21) |>
+    ggplot() +
+    geom_line(aes(x = school_year, y = pass_rate, group = division_number), color = g80, size = 1) +
+    geom_line(data = ccps_rd3, aes(x = school_year, y = pass_rate), size = 2, color = herm) +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Trends Largely Mirrored those of Other Large Divisions<br>in VA",
+        caption = "Data: VDOE Test Results Build-a-Table"
+    )
+
+```
