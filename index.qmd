@@ -1,6 +1,7 @@
 ---
 title: "Data Viz Tips & Tricks"
 author: "Eric Ekholm"
+institute: "CCPS"
 format: 
   revealjs:
     self-contained: true
@@ -19,10 +20,21 @@ format:
 
 - All plots created using [R](https://www.r-project.org/) and the [`ggplot2`](https://ggplot2.tidyverse.org/) visualization library
 - Slides created using [Quarto](https://quarto.org/)
-- Data is publicly available from VDOE (& is also available in this repository).
-- All code/slides available in this [Github repository](https://github.com/ekholme/data_viz_tips)
+- Data is publicly available from [VDOE](https://p1pe.doe.virginia.gov/apex_captcha/home.do?apexTypeId=306) (& is also available in this repository).
+- All code/slides/data available in this [Github repository](https://github.com/ekholme/data_viz_tips)
 
-# Use Data to Tell a Story
+# Types of Data Viz
+
+- Generally, there are 2 "types" of data viz we do:
+    - Embedded in reports/slides (usually static)
+    - Standalone (usually interactive; e.g. a dashboard)
+- This presentation is focused on the first (although some principles may apply to the second as well)
+
+# Framing
+
+- Imagine you're asked to conduct an analysis of your division's historical performance on the grades 3-8 reading SOLs.
+
+# Overarching Principle: Use Data to Tell a Story
 
 - Embrace the fact that visualizations are subjective
 - Make your viz decisions shape the story you want to tell
@@ -34,9 +46,10 @@ format:
 #| echo: false
 
 library(tidyverse)
-library(ccpsr)
+library(ccpsr) #note that this package isn't publicly available, so if you're trying to copy this code, you won't be able to install this.
 library(janitor)
 
+#this is the only function that requires {ccpsr}; so you'll need to delete this or choose a different theme if you're running this code.
 theme_set(theme_ore())
 
 #set color hexes
@@ -132,7 +145,77 @@ basep +
 
 ```
 
-# Tip #3: Build to Complex Visuals
+# Tip #3: Use Aesthetics that Match Your Story
+
+# Comparing to Avg
+
+```{r}
+rd3_top |>
+  group_by(school_year) |>
+  mutate(avg_pass = mean(pass_rate, na.rm = TRUE),
+         relative_pass = pass_rate - avg_pass) |>
+  ungroup() |>
+  filter(division_number == 21) |>
+  ggplot(aes(x = school_year, y = relative_pass)) +
+  geom_hline(yintercept = 0, size = 2, color = "black") +
+  geom_line(color = herm, size = 2) +
+  scale_y_continuous(
+      labels = c("-2", "0", "+2", "+4"),
+      breaks = c(-2, 0, 2, 4)
+  ) +
+  labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%) Relative to Top 10 Division Avg",
+        caption = "Data: VDOE Test Results Build-a-Table",
+        title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Pass Rates Exceeded the Average Pass Rate of the 10 Largest Divisions<br>until Recently"
+    ) +
+  theme(
+      panel.grid.minor = element_blank()
+  )
+```
+
+# Compare to Division (v1)
+
+```{r}
+ccps_hr_rd3 <- sol_top |>
+    filter(division_number %in% c(21, 43), test == "English Reading", test_level == "Grade 3") 
+
+ccps_hr_rd3 |>
+    ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
+    geom_line() +
+    geom_text(data = lbs, aes(x = school_year + .1, y = pass_rate, label = txt), hjust = 0) +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        title = "Chesterfield and Henrico Showed Similar Trends on Grade 3 Reading",
+        caption = "Data: VDOE Test Results Build-a-Table"
+    ) +
+    scale_x_continuous(limits = c(2005, 2022)) +
+    harrypotter::scale_color_hp_d(option = "HermioneGranger") +
+    theme(
+        legend.position = "none"
+    )
+```
+
+# Compare to Division (v2)
+
+```{r}
+ccps_hr_rd3 |>
+    ggplot(aes(x = as.character(school_year), y = division_name, fill = pass_rate)) +
+    geom_tile(height = .8, width = .9) +
+    scale_fill_viridis_c(option = "B", name = "Pass Rate (%)") +
+    labs(
+        x = "School Year (Fall)",
+        y = NULL,
+        title = "CCPS Consistently Outperforms HCPS on 3rd Grade Reading SOL"
+    ) +
+    theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+    )
+```
+
+# Tip #4: Build to Complex Visuals
 
 - Generally, try to keep visualizations simple and aligned with your key takeaways
 - If you need to do something more complex, build to it over several plots
@@ -261,10 +344,86 @@ ccps_hr_rd3 |>
 
 ```
 
+# Tip #3: Use Aesthetics that Match Your Story
+
+# Comparing to Avg
+
+```{r}
+rd3_top |>
+  group_by(school_year) |>
+  mutate(avg_pass = mean(pass_rate, na.rm = TRUE),
+         relative_pass = pass_rate - avg_pass) |>
+  ungroup() |>
+  filter(division_number == 21) |>
+  ggplot(aes(x = school_year, y = relative_pass)) +
+  geom_hline(yintercept = 0, size = 2, color = "black") +
+  geom_line(color = herm, size = 2) +
+  scale_y_continuous(
+      labels = c("-2", "0", "+2", "+4"),
+      breaks = c(-2, 0, 2, 4)
+  ) +
+  labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%) Relative to Top 10 Division Avg",
+        caption = "Data: VDOE Test Results Build-a-Table",
+        title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Pass Rates Exceeded the Average Pass Rate of the 10 Largest Divisions<br>until Recently"
+    ) +
+  theme(
+      panel.grid.minor = element_blank()
+  )
+```
+
+# Compare to Division (v1)
+
+```{r}
+ccps_hr_rd3 |>
+    ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
+    geom_line() +
+    geom_text(data = lbs, aes(x = school_year + .1, y = pass_rate, label = txt), hjust = 0) +
+    labs(
+        x = "School Year (Fall)",
+        y = "Pass Rate (%)",
+        title = "Chesterfield and Henrico Showed Similar Trends on Grade 3 Reading",
+        caption = "Data: VDOE Test Results Build-a-Table"
+    ) +
+    scale_x_continuous(limits = c(2005, 2022)) +
+    harrypotter::scale_color_hp_d(option = "HermioneGranger") +
+    theme(
+        legend.position = "none"
+    )
+```
+
+# Compare to Division (v2)
+
+```{r}
+ccps_hr_rd3 |>
+    ggplot(aes(x = as.character(school_year), y = division_name, fill = pass_rate)) +
+    geom_tile(height = .8, width = .9) +
+    scale_fill_viridis_c(option = "B", name = "Pass Rate (%)") +
+    labs(
+        x = "School Year (Fall)",
+        y = NULL,
+        title = "CCPS Consistently Outperforms HCPS on 3rd Grade Reading SOL"
+    ) +
+    theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+    )
+```
+
+# Wrapping Up
+
+- Remember that you are telling a story with your data
+- Decisions you make about how to present your data should align with your story
+- Less is usually more
+- If you need a complex visual, build to it
+
+# Questions?
+
 # Additional Materials
 
 - [Fundamentals of Data Visualization by Claus Wilke](https://clauswilke.com/dataviz/)
 - [Data Visualization by Kieran Healy](https://socviz.co/)
 - [ggplot2: Elegant Graphics for Data Analysis by Wickham, Navarro, & Pedersen](https://ggplot2-book.org/)
 
-# Questions?
+# Thank You!
