@@ -147,7 +147,7 @@ basep +
 
 # Tip #3: Use Aesthetics that Match Your Story
 
-# Comparing to Avg
+# Compare to Avg
 
 ```{r}
 rd3_top |>
@@ -174,15 +174,43 @@ rd3_top |>
   )
 ```
 
-# Compare to Division (v1)
+# Compare to Baseline
+
+```{r}
+ccps_2005 <- rd3_top |>
+  filter(division_number == 21, school_year == 2005) |>
+  pull(pass_rate)
+
+rd3_top |>
+  filter(division_number == 21) |>
+  mutate(adj_pr = pass_rate - ccps_2005) |>
+  ggplot(aes(x = school_year, y = adj_pr)) +
+  geom_line(color = herm, size = 2) +
+  labs(
+      x = "School Year (Fall)",
+      y = "Pass Rate (%) Relative to 2005 Pass Rate",
+      caption = "Data: VDOE Test Results Build-a-Table",
+      title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Pass Rates Have Mostly Declined since 2005"
+  ) +
+  theme(
+      panel.grid.minor = element_blank()
+  )
+```
+
+
+# Compare to Other
 
 ```{r}
 ccps_hr_rd3 <- sol_top |>
     filter(division_number %in% c(21, 43), test == "English Reading", test_level == "Grade 3") 
 
+lbs <- ccps_hr_rd3 |>
+    filter(school_year == 2020) |>
+    mutate(txt = str_remove_all(division_name, " County"))
+
 ccps_hr_rd3 |>
     ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
-    geom_line() +
+    geom_line(size = 2) +
     geom_text(data = lbs, aes(x = school_year + .1, y = pass_rate, label = txt), hjust = 0) +
     labs(
         x = "School Year (Fall)",
@@ -193,11 +221,12 @@ ccps_hr_rd3 |>
     scale_x_continuous(limits = c(2005, 2022)) +
     harrypotter::scale_color_hp_d(option = "HermioneGranger") +
     theme(
-        legend.position = "none"
+        legend.position = "none",
+        panel.grid.minor = element_blank()
     )
 ```
 
-# Compare to Division (v2)
+# Compare to Other
 
 ```{r}
 ccps_hr_rd3 |>
@@ -276,139 +305,6 @@ rd_es_ms_top |>
         caption = "Data: VDOE Test Results Build-a-Table"
     ) +
     scale_color_identity()
-```
-
-# Tip #4: When Possible, Avoid Legends
-
-- Legends reduce the proportion of space devoted to your plot
-- They also appear separate from the plot
-- When possible, use colored text or direct labels instead of a legend
-
-# With Legend
-
-```{r}
-rd_es_ms_top |>
-    ggplot() +
-    geom_line(aes(x = school_year, y = pass_rate, group = division_name, color = is_ccps), size = 1) +
-    facet_wrap(vars(test_level)) +
-    labs(
-        x = "School Year (Fall)",
-        y = "Pass Rate (%)",
-        title = "CCPS's Grade 3-8 Reading Trends Largely Mirrored those of Other Large Divisions<br>in VA",
-        caption = "Data: VDOE Test Results Build-a-Table"
-    ) +
-    scale_color_identity(name = "Division", labels = c("CCPS", "Other"), guide = "legend")
-```
-
-# Colored Text
-
-```{r}
-rd_es_ms_top |>
-    ggplot() +
-    geom_line(aes(x = school_year, y = pass_rate, group = division_name, color = is_ccps), size = 1) +
-    facet_wrap(vars(test_level)) +
-    labs(
-        x = "School Year (Fall)",
-        y = "Pass Rate (%)",
-        title = "<span style='color:#660012'>CCPS's</span> Grade 3-8 Reading Trends Largely Mirrored those of Other Large Divisions<br>in VA",
-        caption = "Data: VDOE Test Results Build-a-Table"
-    ) +
-    scale_color_identity()
-```
-
-# Direct Labels
-
-```{r}
-ccps_hr_rd3 <- sol_top |>
-    filter(division_number %in% c(21, 43), test == "English Reading", test_level == "Grade 3") 
-
-lbs <- ccps_hr_rd3 |>
-    filter(school_year == 2020) |>
-    mutate(txt = str_remove_all(division_name, " County"))
-    
-ccps_hr_rd3 |>
-    ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
-    geom_line() +
-    geom_text(data = lbs, aes(x = school_year + .1, y = pass_rate, label = txt), hjust = 0) +
-    labs(
-        x = "School Year (Fall)",
-        y = "Pass Rate (%)",
-        title = "Chesterfield and Henrico Showed Similar Trends on Grade 3 Reading",
-        caption = "Data: VDOE Test Results Build-a-Table"
-    ) +
-    scale_x_continuous(limits = c(2005, 2022)) +
-    harrypotter::scale_color_hp_d(option = "HermioneGranger") +
-    theme(
-        legend.position = "none"
-    )
-
-```
-
-# Tip #3: Use Aesthetics that Match Your Story
-
-# Comparing to Avg
-
-```{r}
-rd3_top |>
-  group_by(school_year) |>
-  mutate(avg_pass = mean(pass_rate, na.rm = TRUE),
-         relative_pass = pass_rate - avg_pass) |>
-  ungroup() |>
-  filter(division_number == 21) |>
-  ggplot(aes(x = school_year, y = relative_pass)) +
-  geom_hline(yintercept = 0, size = 2, color = "black") +
-  geom_line(color = herm, size = 2) +
-  scale_y_continuous(
-      labels = c("-2", "0", "+2", "+4"),
-      breaks = c(-2, 0, 2, 4)
-  ) +
-  labs(
-        x = "School Year (Fall)",
-        y = "Pass Rate (%) Relative to Top 10 Division Avg",
-        caption = "Data: VDOE Test Results Build-a-Table",
-        title = "<span style='color:#660012'>CCPS's</span> 3rd Grade Reading Pass Rates Exceeded the Average Pass Rate of the 10 Largest Divisions<br>until Recently"
-    ) +
-  theme(
-      panel.grid.minor = element_blank()
-  )
-```
-
-# Compare to Division (v1)
-
-```{r}
-ccps_hr_rd3 |>
-    ggplot(aes(x = school_year, y = pass_rate, color = division_name)) +
-    geom_line() +
-    geom_text(data = lbs, aes(x = school_year + .1, y = pass_rate, label = txt), hjust = 0) +
-    labs(
-        x = "School Year (Fall)",
-        y = "Pass Rate (%)",
-        title = "Chesterfield and Henrico Showed Similar Trends on Grade 3 Reading",
-        caption = "Data: VDOE Test Results Build-a-Table"
-    ) +
-    scale_x_continuous(limits = c(2005, 2022)) +
-    harrypotter::scale_color_hp_d(option = "HermioneGranger") +
-    theme(
-        legend.position = "none"
-    )
-```
-
-# Compare to Division (v2)
-
-```{r}
-ccps_hr_rd3 |>
-    ggplot(aes(x = as.character(school_year), y = division_name, fill = pass_rate)) +
-    geom_tile(height = .8, width = .9) +
-    scale_fill_viridis_c(option = "B", name = "Pass Rate (%)") +
-    labs(
-        x = "School Year (Fall)",
-        y = NULL,
-        title = "CCPS Consistently Outperforms HCPS on 3rd Grade Reading SOL"
-    ) +
-    theme(
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()
-    )
 ```
 
 # Wrapping Up
