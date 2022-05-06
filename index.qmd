@@ -108,6 +108,12 @@ basep +
     )
 ```
 
+# Discussion
+
+- What are your approaches?
+- When might you not want to use this?
+- Other thoughts/questions?
+
 # Tip #2: Avoid Extraneous Information
 
 # Too Much
@@ -144,6 +150,12 @@ basep +
     )
 
 ```
+
+# Discussion
+
+- What are your approaches?
+- When might you not want to use this?
+- Other thoughts/questions?
 
 # Tip #3: Use Aesthetics that Match Your Story
 
@@ -197,7 +209,6 @@ rd3_top |>
   )
 ```
 
-
 # Compare to Other
 
 ```{r}
@@ -243,6 +254,12 @@ ccps_hr_rd3 |>
         panel.grid.minor = element_blank()
     )
 ```
+
+# Discussion
+
+- What are your approaches?
+- When might you not want to use this?
+- Other thoughts/questions?
 
 # Tip #4: Build to Complex Visuals
 
@@ -306,6 +323,12 @@ rd_es_ms_top |>
     ) +
     scale_color_identity()
 ```
+
+# Discussion
+
+- What are your approaches?
+- When might you not want to use this?
+- Other thoughts/questions?
 
 # Wrapping Up
 
